@@ -1,6 +1,6 @@
-namespace Core.Controllers.Actions;
+namespace Core.Controllers.HttpActions;
 
-public class ActionsUtils
+public static class HttpActionsUtils
 {
     public static IEnumerable<string> ListFiles(string path, int maxDepth)
     {

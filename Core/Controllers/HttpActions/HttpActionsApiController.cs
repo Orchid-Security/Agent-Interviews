@@ -2,11 +2,11 @@ using System.Diagnostics;
 using System.IO.Compression;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Core.Controllers.Actions;
+namespace Core.Controllers.HttpActions;
 
 [ApiController]
 [Route("actions")]
-public class ActionsApiController : ControllerBase
+public class HttpActionsApiController : ControllerBase
 {
     [HttpGet]
     [Route("processes")]
@@ -36,7 +36,7 @@ public class ActionsApiController : ControllerBase
     [Route("list-files")]
     public IActionResult ListFilesInDirectory([FromQuery] string path, [FromQuery] int maxDepth)
     {
-        var files = ActionsUtils.ListFiles(path, maxDepth).ToList();
+        var files = HttpActionsUtils.ListFiles(path, maxDepth).ToList();
         return Ok(files);
     }
 }

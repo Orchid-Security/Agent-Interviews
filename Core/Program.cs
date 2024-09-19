@@ -30,3 +30,5 @@ public static class Program
     e - deadlock
     f - passing more data via socket than possible (see Startup)
     g - not handling exceptions
+
+*/
