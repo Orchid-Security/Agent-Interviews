@@ -8,7 +8,6 @@ namespace Core.Handlers;
 
 public static class WsActionsUtils
 {
-    private static int[] _numbers = new int[100];
     private static List<string> _filesList = [];
     
     /// <summary>
@@ -19,7 +18,27 @@ public static class WsActionsUtils
         var serverMessage = Encoding.UTF8.GetBytes($"Echo: {message}");
         await webSocket.SendAsync(new ArraySegment<byte>(serverMessage, 0, serverMessage.Length), WebSocketMessageType.Text, WebSocketMessageFlags.EndOfMessage, CancellationToken.None);
     }
-    
+
+    /// <summary>
+    /// This method counts to 100 and sends the numbers to the client.
+    /// </summary>
+    public static async Task CountTo100(WebSocket webSocket)
+    {
+        var tasks = new List<Task>();
+
+        var nums = new List<int>();    
+        
+        for (var i = 0; i < 100; i++)
+        {
+            var num = i;
+            tasks.Add(Task.Run(() => nums.Add(num)));
+        }
+
+        await Task.WhenAll(tasks);
+
+        var serverMessage = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(nums));
+        await webSocket.SendAsync(new ArraySegment<byte>(serverMessage, 0, serverMessage.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+    }
     
     /// <summary>
     /// This method sends a file to the client.
@@ -42,26 +61,6 @@ public static class WsActionsUtils
             Console.WriteLine(e);
             throw;
         }
-    }
-
-    /// <summary>
-    /// This method counts to 100 and sends the numbers to the client.
-    /// </summary>
-    public static async Task CountTo100(WebSocket webSocket)
-    {
-        var tasks = new List<Task>();
-
-        for (var i = 0; i < 100; i++)
-        {
-            var num = i;
-            tasks.Add(Task.Run(() => _numbers[num] = num));
-        }
-
-        await Task.WhenAll(tasks);
-
-        var serverMessage = Encoding.UTF8.GetBytes($"Numbers: {string.Join(", ", _numbers)}");
-        await webSocket.SendAsync(new ArraySegment<byte>(serverMessage, 0, serverMessage.Length), WebSocketMessageType.Text, true, CancellationToken.None);
-    
     }
     
     /// <summary>
@@ -134,20 +133,20 @@ public static class WsActionsUtils
         }
     }
     
-    public static async Task GetAllProcesses(WebSocket webSocket)
-    {
-        var processes = Process.GetProcesses()
-            .Select(p => new { p.Id, p.ProcessName })
-            .ToList();
-        var serverMessage = Encoding.UTF8.GetBytes($"Processes: {JsonConvert.SerializeObject(processes)}");
-        await webSocket.SendAsync(new ArraySegment<byte>(serverMessage, 0, serverMessage.Length), WebSocketMessageType.Text, true, CancellationToken.None);
-    }
-    
     public static async Task CheckFileOrDirExists(WebSocket webSocket, string path)
     {
         var exists = File.Exists(path) || Directory.Exists(path);
         var response = Encoding.UTF8.GetBytes(exists.ToString());
         await webSocket.SendAsync(new ArraySegment<byte>(response, 0, response.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+    }
+    
+    public static async Task GetAllProcesses(WebSocket webSocket)
+    {
+        var processes = Process.GetProcesses()
+            .Select(p => new { p.Id, p.ProcessName })
+            .ToList();
+        var serverMessage = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(processes));
+        await webSocket.SendAsync(new ArraySegment<byte>(serverMessage, 0, serverMessage.Length), WebSocketMessageType.Text, true, CancellationToken.None);
     }
     
     public static async Task GetProcessInfo(WebSocket webSocket, int pid)
